@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ipar Spindle · Transporte</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f3f0;--surface:#fff;--border:#e2e0db;
+  --text:#1a1917;--text2:#6b6760;--text3:#9e9b96;
+  --accent:#c8392b;--accent-light:#fdf0ee;
+  --green:#2a7d4f;--green-light:#edf7f2;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 2px 8px rgba(0,0,0,.08);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:0 0 40px}
+
+/* HEADER */
+.header{width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.logo{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.logo span{color:var(--accent)}
+.badge{font-size:11px;color:var(--text3);background:var(--bg);padding:3px 10px;border-radius:10px;border:1px solid var(--border)}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:480px;margin:0 20px;overflow:hidden}
+.card-header{padding:20px;border-bottom:1px solid var(--border);background:var(--bg)}
+.card-title{font-size:15px;font-weight:600}
+.card-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.card-body{padding:20px}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.info-cell{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px}
+.info-cell.full{grid-column:1/-1}
+.info-k{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:3px}
+.info-v{font-size:13px;font-weight:500;color:var(--text)}
+
+/* BADGE DIR */
+.dir-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:500}
+.dir-badge.ida{background:#eef2fd;color:#2b5fc8}
+.dir-badge.vuelta{background:#fdf5ee;color:#c87b2b}
+
+/* FORM */
+.form-sep{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px}
+.form-input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--accent)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 20px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;width:100%}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b02d21}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+
+/* ESTADO */
+#screen-scan, #screen-info, #screen-ok, #screen-error{display:none}
+#screen-scan.active, #screen-info.active, #screen-ok.active, #screen-error.active{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:480px;padding:0 20px}
+
+.scan-icon{font-size:64px;margin-bottom:8px}
+.scan-title{font-size:18px;font-weight:600;text-align:center}
+.scan-sub{font-size:13px;color:var(--text2);text-align:center;line-height:1.5}
+
+.ok-icon{width:72px;height:72px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:8px}
+.ok-title{font-size:20px;font-weight:600;color:var(--green)}
+.ok-sub{font-size:13px;color:var(--text2);text-align:center}
+
+.err-icon{font-size:48px;margin-bottom:8px}
+.err-title{font-size:18px;font-weight:600;color:var(--accent);text-align:center}
+.err-sub{font-size:13px;color:var(--text2);text-align:center}
+
+/* SPINNER */
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Ipar<span>Spindle</span></div>
+  <div class="badge">Albarán de transporte</div>
+</div>
+
+<!-- PANTALLA SCAN -->
+<div id="screen-scan" class="active">
+  <div class="scan-icon">📷</div>
+  <div class="scan-title">Escanea el QR del albarán</div>
+  <div class="scan-sub">Usa la cámara de tu móvil para escanear el código QR del albarán impreso, o introduce el ID manualmente.</div>
+  <div style="width:100%">
+    <input class="form-input" id="manual-id" placeholder="ID del transporte (opcional)" style="margin-bottom:10px">
+    <button class="btn btn-primary" onclick="cargarPorId()">Cargar transporte</button>
+  </div>
+</div>
+
+<!-- PANTALLA CARGANDO -->
+<div id="screen-loading" style="display:none;width:100%;text-align:center;padding:40px 0">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--text2)">Cargando datos...</div>
+</div>
+
+<!-- PANTALLA INFO + FORMULARIO -->
+<div id="screen-info">
+  <div class="card" style="margin:0">
+    <div class="card-header">
+      <div class="card-title" id="info-titulo">Transporte</div>
+      <div class="card-sub" id="info-sub"></div>
+    </div>
+    <div class="card-body">
+      <div class="info-grid" id="info-grid"></div>
+
+      <div class="form-sep">Datos de entrega / recogida</div>
+      <div class="form-group">
+        <label class="form-label">Matrícula o nombre del conductor *</label>
+        <input class="form-input" id="inp-conductor" type="text" placeholder="Ej: 1234 ABC o Juan García" autocomplete="off">
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="form-label">Nombre de quien hace la carga / entrega *</label>
+        <input class="form-input" id="inp-operario" type="text" placeholder="Ej: Zigor" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" id="btn-confirmar" onclick="confirmarTransporte()">
+        ✓ Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA OK -->
+<div id="screen-ok">
+  <div class="ok-icon">✅</div>
+  <div class="ok-title">¡Confirmado!</div>
+  <div class="ok-sub" id="ok-sub">Los datos se han guardado correctamente.</div>
+  <button class="btn btn-secondary" onclick="reiniciar()" style="max-width:200px;margin-top:8px">Nuevo albarán</button>
+</div>
+
+<!-- PANTALLA ERROR -->
+<div id="screen-error">
+  <div class="err-icon">⚠️</div>
+  <div class="err-title" id="err-title">No encontrado</div>
+  <div class="err-sub" id="err-sub">No se ha podido cargar el transporte.</div>
+  <button class="btn btn-secondary" onclick="reiniciar()" style="max-width:200px;margin-top:8px">Volver</button>
+</div>
+
+<script>
+const SB='https://nhgkobfxcktggahdtlta.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZ2tvYmZ4Y2t0Z2dhaGR0bHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTc4NzEsImV4cCI6MjA5NTEzMzg3MX0.S6Zyo2gStK7yo7e5pKhanoCayy_wmpn5wOpAeZZhWDc';
+const H={'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY,'Prefer':'return=representation'};
+
+let transporteActual=null;
+
+async function api(path,method='GET',body=null){
+  const r=await fetch(SB+'/rest/v1/'+path,{method,headers:H,body:body?JSON.stringify(body):null});
+  if(!r.ok) throw new Error(await r.text());
+  const t=await r.text(); return t?JSON.parse(t):null;
+}
+
+function show(id){
+  ['screen-scan','screen-loading','screen-info','screen-ok','screen-error'].forEach(s=>{
+    const el=document.getElementById(s);
+    if(el){el.style.display='none';el.classList.remove('active');}
+  });
+  const el=document.getElementById(id);
+  if(el){el.style.display='flex';el.classList.add('active');}
+}
+
+function cargarPorId(){
+  const id=document.getElementById('manual-id').value.trim();
+  if(!id){alert('Introduce un ID');return;}
+  cargarTransporte(id);
+}
+
+async function cargarTransporte(id){
+  show('screen-loading');
+  try{
+    const rows=await api('transportes?id=eq.'+encodeURIComponent(id)+'&select=*');
+    if(!rows||!rows.length){
+      document.getElementById('err-title').textContent='No encontrado';
+      document.getElementById('err-sub').textContent='No se encontró ningún transporte con ese ID.';
+      show('screen-error'); return;
+    }
+    transporteActual=rows[0];
+    mostrarInfo(transporteActual);
+    show('screen-info');
+  }catch(e){
+    document.getElementById('err-title').textContent='Error de conexión';
+    document.getElementById('err-sub').textContent=e.message;
+    show('screen-error');
+  }
+}
+
+function mostrarInfo(t){
+  const dirL=t.direccion==='ipar_a_cliente'
+    ?'<span class="dir-badge ida">Ipar → Cliente</span>'
+    :'<span class="dir-badge vuelta">Cliente → Ipar</span>';
+  const medidas=[t.largo_cm,t.ancho_cm,t.alto_cm].filter(Boolean).length
+    ?`${t.largo_cm||'—'} × ${t.ancho_cm||'—'} × ${t.alto_cm||'—'} cm`:'—';
+
+  document.getElementById('info-titulo').textContent='Transporte · '+String(t.id).split('-')[0].toUpperCase();
+  document.getElementById('info-sub').textContent='Proyecto '+( t.cliente?'· '+t.cliente:'');
+
+  document.getElementById('info-grid').innerHTML=`
+    <div class="info-cell"><div class="info-k">Cliente</div><div class="info-v">${t.cliente||'—'}</div></div>
+    <div class="info-cell"><div class="info-k">Dirección</div><div class="info-v">${dirL}</div></div>
+    <div class="info-cell"><div class="info-k">Transportista</div><div class="info-v">${t.transportista||'—'}</div></div>
+    <div class="info-cell"><div class="info-k">Medidas / Peso</div><div class="info-v">${medidas} · ${t.peso_kg?t.peso_kg+' kg':'—'}</div></div>
+    ${t.observaciones?`<div class="info-cell full"><div class="info-k">Observaciones</div><div class="info-v">${t.observaciones}</div></div>`:''}
+  `;
+
+  // Rellenar si ya tiene datos previos
+  if(t.matricula_conductor) document.getElementById('inp-conductor').value=t.matricula_conductor;
+  if(t.nombre_operario) document.getElementById('inp-operario').value=t.nombre_operario;
+}
+
+async function confirmarTransporte(){
+  const conductor=document.getElementById('inp-conductor').value.trim();
+  const operario=document.getElementById('inp-operario').value.trim();
+  if(!conductor){alert('Introduce la matrícula o nombre del conductor');return;}
+  if(!operario){alert('Introduce el nombre del operario');return;}
+
+  const btn=document.getElementById('btn-confirmar');
+  btn.textContent='Guardando...'; btn.disabled=true;
+  try{
+    await api('transportes?id=eq.'+transporteActual.id,'PATCH',{
+      matricula_conductor:conductor,
+      nombre_operario:operario,
+      fecha_confirmacion:new Date().toISOString(),
+    });
+    document.getElementById('ok-sub').textContent=
+      `Conductor: ${conductor} · Operario: ${operario}`;
+    show('screen-ok');
+  }catch(e){
+    alert('Error al guardar: '+e.message);
+  }finally{
+    btn.textContent='✓ Confirmar'; btn.disabled=false;
+  }
+}
+
+function reiniciar(){
+  transporteActual=null;
+  document.getElementById('manual-id').value='';
+  document.getElementById('inp-conductor').value='';
+  document.getElementById('inp-operario').value='';
+  // Limpiar URL
+  history.replaceState(null,'',location.pathname);
+  show('screen-scan');
+}
+
+// Auto-cargar si hay ?id= en la URL
+(function(){
+  const id=new URLSearchParams(location.search).get('id');
+  if(id) cargarTransporte(id);
+})();
+</script>
+<!-- pin v1 Thu Jun  5 2026 -->
+</body>
+</html>
