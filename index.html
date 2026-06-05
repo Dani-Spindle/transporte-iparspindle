@@ -112,10 +112,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="card-body">
       <div class="info-grid" id="info-grid"></div>
 
+      <!-- Transportista destacado -->
+      <div id="transportista-aviso" style="display:none;background:#fdf5ee;border:1.5px solid #c87b2b;border-radius:10px;padding:14px 16px;margin-bottom:18px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#c87b2b;margin-bottom:4px">🚚 Transportista asignado</div>
+        <div id="transportista-nombre" style="font-size:18px;font-weight:600;color:#1a1917"></div>
+      </div>
+
       <div class="form-sep">Datos de entrega / recogida</div>
       <div class="form-group">
-        <label class="form-label">Matrícula o nombre del conductor *</label>
-        <input class="form-input" id="inp-conductor" type="text" placeholder="Ej: 1234 ABC o Juan García" autocomplete="off">
+        <label class="form-label">Matrícula del vehículo *</label>
+        <input class="form-input" id="inp-conductor" type="text" placeholder="Ej: 1234 ABC" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;font-size:16px;font-weight:600">
       </div>
       <div class="form-group" style="margin-bottom:20px">
         <label class="form-label">Nombre de quien hace la carga / entrega *</label>
@@ -201,11 +207,20 @@ function mostrarInfo(t){
   document.getElementById('info-titulo').textContent='Transporte · '+String(t.id).split('-')[0].toUpperCase();
   document.getElementById('info-sub').textContent='Proyecto '+( t.cliente?'· '+t.cliente:'');
 
+  // Aviso transportista
+  const avisoEl=document.getElementById('transportista-aviso');
+  if(t.transportista){
+    document.getElementById('transportista-nombre').textContent=t.transportista;
+    avisoEl.style.display='block';
+  } else {
+    avisoEl.style.display='none';
+  }
+
   document.getElementById('info-grid').innerHTML=`
     <div class="info-cell"><div class="info-k">Cliente</div><div class="info-v">${t.cliente||'—'}</div></div>
     <div class="info-cell"><div class="info-k">Dirección</div><div class="info-v">${dirL}</div></div>
-    <div class="info-cell"><div class="info-k">Transportista</div><div class="info-v">${t.transportista||'—'}</div></div>
-    <div class="info-cell"><div class="info-k">Medidas / Peso</div><div class="info-v">${medidas} · ${t.peso_kg?t.peso_kg+' kg':'—'}</div></div>
+    <div class="info-cell"><div class="info-k">Medidas</div><div class="info-v">${medidas}</div></div>
+    <div class="info-cell"><div class="info-k">Peso</div><div class="info-v">${t.peso_kg?t.peso_kg+' kg':'—'}</div></div>
     ${t.observaciones?`<div class="info-cell full"><div class="info-k">Observaciones</div><div class="info-v">${t.observaciones}</div></div>`:''}
   `;
 
@@ -217,7 +232,7 @@ function mostrarInfo(t){
 async function confirmarTransporte(){
   const conductor=document.getElementById('inp-conductor').value.trim();
   const operario=document.getElementById('inp-operario').value.trim();
-  if(!conductor){alert('Introduce la matrícula o nombre del conductor');return;}
+  if(!conductor){alert('Introduce la matrícula del vehículo');return;}
   if(!operario){alert('Introduce el nombre del operario');return;}
 
   const btn=document.getElementById('btn-confirmar');
@@ -229,7 +244,7 @@ async function confirmarTransporte(){
       fecha_confirmacion:new Date().toISOString(),
     });
     document.getElementById('ok-sub').textContent=
-      `Conductor: ${conductor} · Operario: ${operario}`;
+      `Matrícula: ${conductor} · Operario: ${operario}`;
     show('screen-ok');
   }catch(e){
     alert('Error al guardar: '+e.message);
