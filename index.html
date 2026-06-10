@@ -136,10 +136,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- PANTALLA OK -->
 <div id="screen-ok">
-  <div class="ok-icon">✅</div>
-  <div class="ok-title">¡Confirmado!</div>
+  <div class="ok-icon" id="ok-icon">✅</div>
+  <div class="ok-title" id="ok-title">¡Confirmado!</div>
   <div class="ok-sub" id="ok-sub">Los datos se han guardado correctamente.</div>
-  <button class="btn btn-secondary" onclick="reiniciar()" style="max-width:200px;margin-top:8px">Nuevo albarán</button>
+  <button class="btn btn-secondary" id="ok-btn-nuevo" onclick="reiniciar()" style="max-width:200px;margin-top:8px">Nuevo albarán</button>
 </div>
 
 <!-- PANTALLA ERROR -->
@@ -188,6 +188,17 @@ async function cargarTransporte(id){
       show('screen-error'); return;
     }
     transporteActual=rows[0];
+    // Si ya fue confirmado, mostrar pantalla de bloqueado
+    if(transporteActual.fecha_confirmacion){
+      const fecha = new Date(transporteActual.fecha_confirmacion).toLocaleString('es-ES');
+      document.getElementById('ok-icon').textContent = '🔒';
+      document.getElementById('ok-title').textContent = 'Albarán ya confirmado';
+      document.getElementById('ok-title').style.color = '#c0392b';
+      document.getElementById('ok-sub').textContent =
+        `Confirmado el ${fecha}\nMatrícula: ${transporteActual.matricula_conductor||'—'} · Operario: ${transporteActual.nombre_operario||'—'}`;
+      document.getElementById('ok-btn-nuevo').style.display='none';
+      show('screen-ok'); return;
+    }
     mostrarInfo(transporteActual);
     show('screen-info');
   }catch(e){
